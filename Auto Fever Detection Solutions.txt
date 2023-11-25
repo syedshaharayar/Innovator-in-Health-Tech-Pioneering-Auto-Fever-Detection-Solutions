@@ -1,0 +1,47 @@
+#include <Wire.h>
+#include <Adafruit_MLX90614.h>
+
+#define INFRARED_SENSOR_PIN 2
+#define ACCESS_DENIED_PIN 7
+
+Adafruit_MLX90614 mlx = Adafruit_MLX90614();
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(INFRARED_SENSOR_PIN, INPUT);
+  pinMode(ACCESS_DENIED_PIN, OUTPUT);
+}
+
+void loop() {
+  // Read presence from infrared sensor
+  int presence = digitalRead(INFRARED_SENSOR_PIN);
+
+  // If someone is present
+  if (presence == HIGH) {
+    // Read body temperature
+    float bodyTemperature = mlx.readObjectTempC();
+
+    Serial.print("Body Temperature: ");
+    Serial.println(bodyTemperature);
+
+    // Check if temperature is above the threshold (adjust as needed)
+    if (bodyTemperature > 37.5) {
+      // Access Denied
+      digitalWrite(ACCESS_DENIED_PIN, HIGH);
+      Serial.println("Access Denied - High Temperature");
+      delay(5000);  // Wait for 5 seconds to display the message
+      digitalWrite(ACCESS_DENIED_PIN, LOW);
+    } else {
+      // Access Allowed
+      Serial.println("Access Allowed");
+      // You can add further actions for access allowed
+    }
+    
+    // Wait for a moment before checking again
+    delay(1000);
+  } else {
+    // No one is present
+    // You can add further actions for no presence
+    delay(1000);
+  }
+}
